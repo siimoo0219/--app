@@ -3,313 +3,550 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>仕木有限公司</title>
+    <title>RenovatePro</title>
     <style>
-        /* CSS 樣式維持不變，保持美觀 */
-        :root { --primary: #2563eb; --finance: #10b981; --expense: #ef4444; --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; --border: #e5e7eb; }
+        /* --- 🎨 莫蘭迪色系定義 (Morandi Palette) --- */
+        :root {
+            --m-blue: #6A8EAE;     /* 霧霾藍 (工時/主色) */
+            --m-rose: #C08497;     /* 乾燥玫瑰 (支出) */
+            --m-sage: #8DA399;     /* 鼠尾草綠 (收入) */
+            --m-bg: #F7F7F5;       /* 米灰背景 */
+            --m-card: #FFFFFF;     /* 純白卡片 */
+            --m-input: #F2F2F0;    /* 淺灰輸入框 */
+            --text-dark: #4A4A4A;  /* 深灰文字 */
+            --text-light: #8E8E93; /* 淺灰文字 */
+            --radius: 12px;
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", Roboto, sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 80px; }
-        .header { background: var(--card); padding: 15px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; text-align: center; font-weight: bold; font-size: 1.1rem; color: var(--primary); }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .form-group { margin-bottom: 18px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.95rem; color: #4b5563; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background: #fff; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
-        .btn-group { display: flex; gap: 10px; }
-        .btn-option { flex: 1; padding: 12px; border: 1px solid var(--border); background: white; border-radius: 8px; text-align: center; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        .btn-option.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3); }
-        .finance-toggle { display: flex; background: #e5e7eb; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
-        .toggle-item { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: bold; color: #6b7280; }
-        .toggle-item.active-in { background: white; color: var(--finance); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .toggle-item.active-out { background: white; color: var(--expense); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .submit-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
-        .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
-        .nav-item { flex: 1; padding: 12px; text-align: center; cursor: pointer; color: #9ca3af; font-size: 0.8rem; }
-        .nav-item div { font-size: 1.4rem; margin-bottom: 2px; }
-        .nav-item.active { color: var(--primary); }
-        .page { display: none; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", sans-serif;
+            background-color: var(--m-bg);
+            color: var(--text-dark);
+            margin: 0; padding: 0;
+            padding-bottom: 90px;
+        }
+
+        /* 頂部導航 */
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--m-blue);
+            position: sticky; top: 0; z-index: 50;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+        /* 輸入框群組 */
+        .form-section { margin-bottom: 24px; }
+        .section-label {
+            font-size: 0.85rem; color: var(--text-light);
+            margin-bottom: 8px; margin-left: 4px;
+            font-weight: 500;
+        }
+
+        /* 莫蘭迪圓角輸入框 */
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--m-input);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: background 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { background-color: #E5E5EA; }
+
+        /* 特殊輸入框：金額 */
+        .amount-input {
+            font-size: 1.8rem; font-weight: bold; text-align: center;
+            background: transparent; padding: 10px;
+        }
+
+        /* 膠囊按鈕 (工數/切換) */
+        .capsule-group {
+            display: flex; background: var(--m-input);
+            padding: 4px; border-radius: var(--radius);
+        }
+        .capsule {
+            flex: 1; text-align: center; padding: 10px;
+            font-size: 0.95rem; border-radius: 8px;
+            cursor: pointer; color: var(--text-light);
+            transition: all 0.2s;
+        }
+        .capsule.active {
+            background: #fff; color: var(--m-blue);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-weight: 600;
+        }
+
+        /* 新增輸入框 (預設隱藏) */
+        .new-input { 
+            margin-top: 8px; display: none; 
+            border: 1px solid var(--m-sage); background: #FDFDFD; 
+        }
+
+        /* 送出按鈕 */
+        .submit-btn {
+            width: 100%; padding: 16px; margin-top: 20px;
+            border-radius: var(--radius); border: none;
+            font-size: 1.1rem; font-weight: 600; color: white;
+            background: var(--m-blue);
+            box-shadow: 0 4px 12px rgba(106, 142, 174, 0.3);
+            cursor: pointer;
+        }
+        .submit-btn:active { transform: scale(0.98); }
+
+        /* 歷史紀錄區塊 */
+        .history-section {
+            margin-top: 40px; border-top: 1px solid #E0E0E0;
+            padding-top: 20px;
+        }
+        .history-title { font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px; }
+        .history-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #F0F0F0; font-size: 0.95rem;
+        }
+        .history-tag {
+            font-size: 0.75rem; padding: 3px 8px; border-radius: 6px;
+            background: var(--m-input); color: var(--text-light); margin-right: 8px;
+        }
+
+        /* 底部導航 */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+            display: flex; border-top: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: env(safe-area-inset-bottom); z-index: 100;
+        }
+        .nav-item {
+            flex: 1; padding: 12px; text-align: center;
+            cursor: pointer; color: #C7C7CC;
+        }
+        .nav-item.active { color: var(--m-blue); }
+        .nav-icon { font-size: 1.4rem; margin-bottom: 2px; display: block; }
+        .nav-text { font-size: 0.75rem; font-weight: 500; }
+
+        /* Modal 確認視窗 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); z-index: 999;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-card {
+            background: white; width: 85%; max-width: 320px;
+            border-radius: 20px; padding: 24px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; }
+        .modal-content { text-align: left; font-size: 0.95rem; color: #666; line-height: 1.6; margin-bottom: 24px; background: var(--m-input); padding: 15px; border-radius: 12px;}
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+        .btn-cancel { background: #F2F2F0; color: #666; }
+        .btn-confirm { background: var(--m-blue); color: white; }
+
+        .page { display: none; animation: fadeIn 0.3s; }
         .page.active { display: block; }
-        #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; color: var(--primary); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 載入遮罩 */
+        #loading-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: var(--m-bg); z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--m-blue); font-weight: bold; flex-direction: column;
+        }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay">
-        <div style="font-size: 2rem; margin-bottom: 10px;">🔄</div>
-        <div>正在從 Google Sheets 同步資料...</div>
+        <div style="font-size: 2rem; margin-bottom: 10px;">⏳</div>
+        <div>同步資料中...</div>
     </div>
 
-    <div class="header" id="header-title">RenovatePro 師傅回報</div>
+    <div class="header" id="header-title">工時回報</div>
 
     <div id="page-worker" class="page active">
         <div class="container">
-            <div class="card">
-                <div class="form-group">
-                    <label>📅 日期</label>
-                    <input type="date" id="w-date">
-                </div>
-                <div class="form-group">
-                    <label>👷‍♂️ 員工姓名</label>
-                    <select id="w-name"><option>載入中...</option></select>
-                </div>
-                <div class="form-group">
-                    <label>🏗️ 專案工地</label>
-                    <select id="w-project"><option>載入中...</option></select>
-                </div>
-                <div class="form-group">
-                    <label>📝 工作內容</label>
-                    <textarea id="w-desc" rows="3" placeholder="例如：釘天花板骨架..."></textarea>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="form-group">
-                    <label>⏰ 今日工數</label>
-                    <div class="btn-group" id="work-unit-group">
-                        <div class="btn-option active" data-val="1">1 工</div>
-                        <div class="btn-option" data-val="0.5">0.5 工</div>
-                        <div class="btn-option" data-val="0">0</div>
+            
+            <div class="form-section">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <div class="section-label">日期</div>
+                        <input type="date" id="w-date">
                     </div>
-                    <input type="hidden" id="w-unit" value="1">
-                </div>
-                <div class="form-group">
-                    <label>🌙 加班時數 (hr)</label>
-                    <input type="number" id="w-overtime" value="0" min="0" step="0.5">
+                    <div style="flex: 1;">
+                        <div class="section-label">員工姓名</div>
+                        <select id="w-name" onchange="checkNewInput('w-name', 'w-name-new')"></select>
+                        <input type="text" id="w-name-new" class="new-input" placeholder="輸入臨時姓名">
+                    </div>
                 </div>
             </div>
 
-            <div class="card" style="border-left: 5px solid #f59e0b;">
-                <div class="form-group">
-                    <label style="color:#d97706;">💰 代墊費用 (無則免填)</label>
-                    <input type="number" id="w-claim" placeholder="輸入金額">
+            <div class="form-section">
+                <div class="section-label">專案工地</div>
+                <select id="w-project" onchange="checkNewInput('w-project', 'w-project-new')"></select>
+                <input type="text" id="w-project-new" class="new-input" placeholder="輸入新專案名稱">
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">工作內容</div>
+                <textarea id="w-desc" rows="3" placeholder="例如：釘天花板骨架..."></textarea>
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">今日工數</div>
+                <div class="capsule-group" id="work-unit-group">
+                    <div class="capsule active" data-val="1">1 工</div>
+                    <div class="capsule" data-val="0.5">0.5 工</div>
+                    <div class="capsule" data-val="0">0</div>
                 </div>
-                <div class="form-group">
-                    <label>代墊說明</label>
-                    <input type="text" id="w-claim-desc" placeholder="例如：買涼水">
+                <input type="hidden" id="w-unit" value="1">
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">加班 (小時)</div>
+                <input type="number" id="w-overtime" placeholder="0" step="0.5">
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">代墊費用 (選填)</div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="w-claim" placeholder="$ 金額" style="flex: 1;">
+                    <input type="text" id="w-claim-desc" placeholder="代墊說明" style="flex: 2;">
+                </div>
+
+
+            </div>
+
+            <button type="button" class="submit-btn" onclick="preSubmitWorker()">送出今日工時</button>
+
+            <div class="history-section">
+                <div class="history-title">📋 本日已傳送 (僅供確認)</div>
+                <div id="worker-history-list">
+                    <div style="text-align:center; color:#ccc; padding:10px;">尚無紀錄</div>
                 </div>
             </div>
-            <button type="button" class="submit-btn" onclick="sendWorkerData()">🚀 送出工時</button>
         </div>
     </div>
 
     <div id="page-finance" class="page">
         <div class="container">
-            <div class="card">
-                <div class="finance-toggle">
-                    <div class="toggle-item active-out" id="btn-expense" onclick="setFinanceType('out')">支出</div>
-                    <div class="toggle-item" id="btn-income" onclick="setFinanceType('in')">收入</div>
-                </div>
-                <input type="hidden" id="f-type" value="支出">
-
-                <div class="form-group">
-                    <label>📅 日期</label>
-                    <input type="date" id="f-date">
-                </div>
-                <div class="form-group">
-                    <label>🏗️ 專案工地</label>
-                    <select id="f-project"></select>
-                </div>
-                <div class="form-group">
-                    <label>📂 分類</label>
-                    <select id="f-category"><option>載入中...</option></select>
-                </div>
-                <div class="form-group" id="vendor-group">
-                    <label>🏢 廠商 / 對象</label>
-                    <input type="text" id="f-vendor" placeholder="例如：永誠建材">
-                </div>
-                <div class="form-group">
-                    <label>📝 細項說明</label>
-                    <input type="text" id="f-desc" placeholder="例如：矽酸鈣板 20片">
-                </div>
-                <div class="form-group">
-                    <label>💰 金額</label>
-                    <input type="number" id="f-amount" placeholder="輸入金額" style="font-size:1.2rem; font-weight:bold;">
-                </div>
+            
+            <div class="capsule-group" style="margin-bottom: 24px;">
+                <div class="capsule active" id="btn-expense" onclick="setFinanceType('out')" style="color:var(--m-rose);">支出</div>
+                <div class="capsule" id="btn-income" onclick="setFinanceType('in')">收入</div>
             </div>
-            <button type="button" class="submit-btn" style="background-color: var(--expense);" id="f-submit-btn" onclick="sendFinanceData()">💸 確認支出</button>
+            <input type="hidden" id="f-type" value="支出">
+
+            <div class="form-section" style="text-align: center;">
+                <div class="section-label">金額 (含稅)</div>
+                <input type="number" id="f-amount" class="amount-input" placeholder="$ 0">
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">基本資訊</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="date" id="f-date" style="flex: 1;">
+                    <select id="f-category" style="flex: 1;"><option>分類載入中...</option></select>
+                </div>
+                <select id="f-project" onchange="checkNewInput('f-project', 'f-project-new')"></select>
+                <input type="text" id="f-project-new" class="new-input" placeholder="輸入新專案名稱">
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">金流與單據</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <select id="f-method" style="flex: 1;"><option>現金</option></select>
+                    <select id="f-invoice-type" style="flex: 1.5;"><option>三聯式發票</option></select>
+                </div>
+                <input type="text" id="f-invoice-no" placeholder="發票號碼 (選填)">
+            </div>
+
+            <div class="form-section">
+                <div class="section-label">對象與說明</div>
+                <input type="text" id="f-vendor" placeholder="廠商 (如有統編可寫此)" style="margin-bottom: 10px;">
+                <input type="text" id="f-desc" placeholder="細項說明...">
+            </div>
+
+            <button type="button" class="submit-btn" id="f-submit-btn" style="background-color: var(--m-rose);" onclick="preSubmitFinance()">確認支出</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card">
+            <div class="modal-title">請確認資料無誤</div>
+            <div class="modal-content" id="modal-text">
+                </div>
+            <div class="modal-btns">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">返回修改</button>
+                <button class="modal-btn btn-confirm" id="modal-confirm-btn">確認送出</button>
+            </div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchPage('worker', this)" id="nav-worker">
-            <div>👷</div> 工時回報
+        <div class="nav-item active" onclick="switchPage('worker', this)">
+            <span class="nav-icon">👷</span><span class="nav-text">工時</span>
         </div>
-        <div class="nav-item" onclick="switchPage('finance', this)" id="nav-finance">
-            <div>💸</div> 收支記帳
+        <div class="nav-item" onclick="switchPage('finance', this)">
+            <span class="nav-icon">💰</span><span class="nav-text">記帳</span>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // ⚠️ 請在這裡貼上 Apps Script 網址
+        // ⚠️ 自動抓取網址 (不用改)
         // ==========================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbylBF3jiDIw2TnUOXOBt_j54HMTm03-jgV1fhv6Qz6wzz84zoGmm9hjLrli1w_cLBSTpg/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0KbDlgELTVLI0L-Zc_lsonjuNAh3vBrPns1st3M5cM2y5StFCp6ZwFLjDTIxfjih0uQ/exec"; 
 
-
-        // --- 初始化：載入 Google Sheets 清單 ---
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('w-date').value = today;
             document.getElementById('f-date').value = today;
-            
-            // 執行資料同步
-            fetchDataFromGoogle();
+            fetchData();
+            renderHistory(); // 載入歷史紀錄
         };
 
-        // 這是新的核心功能：去後台抓資料
-        function fetchDataFromGoogle() {
-            fetch(SCRIPT_URL)
-                .then(response => response.json())
+        // --- 核心資料處理 ---
+        function fetchData() {
+            fetch(SCRIPT_URL + "?action=getData")
+                .then(r => r.json())
                 .then(data => {
-                    // 填入選單
-                    populateSelect('w-name', data.employees);
-                    populateSelect('w-project', data.projects);
+                    populateSelect('w-name', data.employees, true, "➕ 臨時支援/其他");
+                    populateSelect('w-project', data.projects, true, "➕ 新增專案...");
+                    populateSelect('f-project', data.projects, true, "➕ 新增專案...");
                     
-                    // 記帳頁面的專案選單也要填
-                    populateSelect('f-project', data.projects);
-                    
-                    // 填入收支分類
                     populateSelect('f-category', data.categories);
+                    populateSelect('f-method', data.methods);
+                    populateSelect('f-invoice-type', data.invoices);
 
-                    // 隱藏載入畫面
-                    document.getElementById('loading-overlay').style.display = 'none';
-                })
-                .catch(error => {
-                    alert("❌ 無法同步 Google Sheets 資料，請檢查網路或網址。\n" + error);
                     document.getElementById('loading-overlay').style.display = 'none';
                 });
         }
 
-        function populateSelect(id, list) {
+        function populateSelect(id, list, allowNew, newLabel) {
             const select = document.getElementById(id);
-            select.innerHTML = ""; // 清空原本的「載入中...」
-            if(list && list.length > 0) {
-                list.forEach(item => select.add(new Option(item, item)));
-            } else {
-                select.add(new Option("無資料", ""));
+            select.innerHTML = "";
+            if(list) list.forEach(i => select.add(new Option(i, i)));
+            if(allowNew) {
+                const opt = new Option(newLabel, "NEW_OPTION");
+                opt.style.color = "blue";
+                select.add(opt);
             }
         }
 
-        // --- 工時回報 ---
-        function sendWorkerData() {
-            const btn = document.querySelector('#page-worker .submit-btn');
+        function checkNewInput(selId, inpId) {
+            const val = document.getElementById(selId).value;
+            document.getElementById(inpId).style.display = (val === "NEW_OPTION") ? "block" : "none";
+        }
+
+        function getFinalVal(selId, inpId) {
+            const val = document.getElementById(selId).value;
+            return (val === "NEW_OPTION") ? document.getElementById(inpId).value : val;
+        }
+
+        // --- 工時送出邏輯 (含確認視窗) ---
+        let pendingData = null; // 暫存要送出的資料
+        let pendingType = "";   // worker 或 finance
+
+        function preSubmitWorker() {
+            const name = getFinalVal('w-name', 'w-name-new');
+            const proj = getFinalVal('w-project', 'w-project-new');
             const desc = document.getElementById('w-desc').value;
-            if(!desc) { alert("請填寫工作內容！"); return; }
+            
+            if(!name || !proj || !desc) { alert("請填寫完整資訊 (姓名、專案、內容)"); return; }
 
             const data = {
                 date: document.getElementById('w-date').value,
-                name: document.getElementById('w-name').value,
-                project: document.getElementById('w-project').value,
-                desc: desc,
+                name: name, project: proj, desc: desc,
                 unit: document.getElementById('w-unit').value,
                 overtime: document.getElementById('w-overtime').value || 0,
                 claim: document.getElementById('w-claim').value || 0,
                 claimDesc: document.getElementById('w-claim-desc').value || ""
             };
 
-            submitToGoogle('worker', data, btn);
+            // 顯示確認視窗
+            showModal('worker', data);
         }
 
-        // --- 記帳回報 ---
-        function sendFinanceData() {
-            const btn = document.querySelector('#page-finance .submit-btn');
-            const amount = document.getElementById('f-amount').value;
-            if(!amount) { alert("請輸入金額"); return; }
+        function preSubmitFinance() {
+            const amt = document.getElementById('f-amount').value;
+            const proj = getFinalVal('f-project', 'f-project-new');
+            
+            if(!amt) { alert("請輸入金額"); return; }
+            if(!proj) { alert("請選擇專案"); return; }
+
             const type = document.getElementById('f-type').value;
-            const finalAmount = type === "支出" ? -Math.abs(amount) : Math.abs(amount);
+            const finalAmt = type === "支出" ? -Math.abs(amt) : Math.abs(amt);
 
             const data = {
                 date: document.getElementById('f-date').value,
                 typeDir: type,
-                project: document.getElementById('f-project').value,
+                project: proj,
                 category: document.getElementById('f-category').value,
-                desc: document.getElementById('f-desc').value,
-                vendor: type === "支出" ? document.getElementById('f-vendor').value : "",
-                amount: finalAmount
+                method: document.getElementById('f-method').value,
+                amount: finalAmt,
+                invoiceType: document.getElementById('f-invoice-type').value,
+                invoiceNo: document.getElementById('f-invoice-no').value,
+                vendor: document.getElementById('f-vendor').value,
+                desc: document.getElementById('f-desc').value
             };
 
-            submitToGoogle('finance', data, btn);
+            showModal('finance', data);
         }
 
-        function submitToGoogle(type, data, btnElement) {
-            const originalText = btnElement.innerText;
-            btnElement.innerText = "資料傳送中...";
-            btnElement.disabled = true;
+        // --- Modal 控制與送出 ---
+        function showModal(type, data) {
+            pendingData = data;
+            pendingType = type;
+            const modal = document.getElementById('confirm-modal');
+            const content = document.getElementById('modal-text');
+            const btn = document.getElementById('modal-confirm-btn');
+
+            let html = "";
+            if (type === 'worker') {
+                html = `
+                    <b>👷 姓名：</b>${data.name}<br>
+                    <b>🏗️ 專案：</b>${data.project}<br>
+                    <b>📝 內容：</b>${data.desc}<br>
+                    <b>⏰ 工數：</b>${data.unit} 工<br>
+                    ${data.claim > 0 ? `<b style='color:orange'>💰 代墊：$${data.claim}</b>` : ""}
+                `;
+                btn.style.backgroundColor = "var(--m-blue)";
+            } else {
+                html = `
+                    <b>🏗️ 專案：</b>${data.project}<br>
+                    <b>📂 分類：</b>${data.category}<br>
+                    <b>💰 金額：$ ${Math.abs(data.amount)}</b> (${data.typeDir})<br>
+                    <b>🧾 單據：</b>${data.invoiceType}<br>
+                    <b>📝 說明：</b>${data.desc || "無"}
+                `;
+                btn.style.backgroundColor = data.typeDir === "支出" ? "var(--m-rose)" : "var(--m-sage)";
+            }
+
+            content.innerHTML = html;
+            modal.style.display = "flex";
+
+            // 綁定確認按鈕事件
+            btn.onclick = function() {
+                realSubmit();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('confirm-modal').style.display = "none";
+        }
+
+        function realSubmit() {
+            const btn = document.getElementById('modal-confirm-btn');
+            btn.innerText = "傳送中...";
+            btn.disabled = true;
 
             fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
+                method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: type, data: data })
-            })
-            .then(() => {
+                body: JSON.stringify({ type: pendingType, data: pendingData })
+            }).then(() => {
                 alert("✅ 資料已成功送出！");
-                btnElement.innerText = originalText;
-                btnElement.disabled = false;
-                if(type === 'worker') {
+                closeModal();
+                btn.innerText = "確認送出";
+                btn.disabled = false;
+                
+                // 成功後處理：加入歷史紀錄 & 清空欄位
+                if(pendingType === 'worker') {
+                    addToHistory(pendingData);
                     document.getElementById('w-desc').value = "";
                     document.getElementById('w-claim').value = "";
-                    document.getElementById('w-claim-desc').value = "";
                 } else {
                     document.getElementById('f-amount').value = "";
                     document.getElementById('f-desc').value = "";
                 }
-            })
-            .catch(err => {
-                alert("❌ 傳送失敗：" + err);
-                btnElement.innerText = originalText;
-                btnElement.disabled = false;
+            }).catch(e => {
+                alert("❌ 錯誤：" + e);
+                closeModal();
             });
         }
 
-        function switchPage(pageName, navElem) {
+        // --- 歷史紀錄 (Local Storage) ---
+        function addToHistory(data) {
+            let history = JSON.parse(localStorage.getItem('worker_history') || "[]");
+            // 只留最近 10 筆
+            history.unshift(data); 
+            if(history.length > 10) history.pop();
+            localStorage.setItem('worker_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('worker-history-list');
+            const history = JSON.parse(localStorage.getItem('worker_history') || "[]");
+            
+            if(history.length === 0) return;
+
+            list.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div>
+                        <span class="history-tag">${item.project.substring(0,4)}..</span> 
+                        ${item.desc.substring(0,10)}
+                    </div>
+                    <div style="font-weight:bold;">${item.unit} 工</div>
+                </div>
+            `).join('');
+        }
+
+        // --- 介面切換與互動 ---
+        function switchPage(page, navElem) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-' + pageName).classList.add('active');
+            document.getElementById('page-' + page).classList.add('active');
+            
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             navElem.classList.add('active');
             
             const title = document.getElementById('header-title');
-            if (pageName === 'worker') {
-                title.innerText = "師傅回報";
-                title.style.color = "var(--primary)";
+            if(page === 'worker') {
+                title.innerText = "工時回報";
+                title.style.color = "var(--m-blue)";
             } else {
-                title.innerText = "記帳";
-                title.style.color = "var(--finance)";
+                title.innerText = "收支記帳";
+                title.style.color = "var(--m-rose)";
             }
         }
 
         function setFinanceType(type) {
             const btnIn = document.getElementById('btn-income');
             const btnOut = document.getElementById('btn-expense');
-            const btnSubmit = document.getElementById('f-submit-btn');
+            const btnSub = document.getElementById('f-submit-btn');
             
-            if (type === 'out') {
+            if(type === 'out') {
                 document.getElementById('f-type').value = "支出";
-                btnOut.className = "toggle-item active-out";
-                btnIn.className = "toggle-item";
-                btnSubmit.innerText = "💸 確認支出";
-                btnSubmit.style.backgroundColor = "var(--expense)";
-                document.getElementById('vendor-group').style.display = 'block';
+                btnOut.classList.add('active'); btnOut.style.color = "var(--m-rose)";
+                btnIn.classList.remove('active'); btnIn.style.color = "var(--text-light)";
+                btnSub.innerText = "確認支出"; btnSub.style.backgroundColor = "var(--m-rose)";
             } else {
                 document.getElementById('f-type').value = "收入";
-                btnIn.className = "toggle-item active-in";
-                btnOut.className = "toggle-item";
-                btnSubmit.innerText = "💰 確認收入";
-                btnSubmit.style.backgroundColor = "var(--finance)";
-                document.getElementById('vendor-group').style.display = 'none';
+                btnIn.classList.add('active'); btnIn.style.color = "var(--m-sage)";
+                btnOut.classList.remove('active'); btnOut.style.color = "var(--text-light)";
+                btnSub.innerText = "確認收入"; btnSub.style.backgroundColor = "var(--m-sage)";
             }
         }
 
-        const unitOptions = document.querySelectorAll('#work-unit-group .btn-option');
-        unitOptions.forEach(opt => {
-            opt.addEventListener('click', function() {
-                unitOptions.forEach(o => o.classList.remove('active'));
+        // 工數膠囊點擊
+        document.querySelectorAll('#work-unit-group .capsule').forEach(el => {
+            el.onclick = function() {
+                document.querySelectorAll('#work-unit-group .capsule').forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
                 document.getElementById('w-unit').value = this.dataset.val;
-            });
+            }
         });
+
     </script>
 </body>
 </html>
