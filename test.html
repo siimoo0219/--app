@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-TW"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>RenovatePro</title>
+<style>
+:root{--b:#6A8EAE;--r:#C08497;--s:#8DA399;--bg:#F7F7F5;--in:#F2F2F0;--t:#4A4A4A;--l:#8E8E93;--rad:12px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+body{margin:0;padding-bottom:90px;font-family:-apple-system,BlinkMacSystemFont,"Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--t)}
+.hd{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);padding:12px 16px;text-align:center;font-weight:600;color:var(--b);border-bottom:1px solid #0001}
+.hd small{display:block;font-weight:400;font-size:.7rem;color:var(--l)}
+.out{position:absolute;right:14px;top:16px;font-size:.8rem;color:var(--l);font-weight:400;cursor:pointer}
+.wrap{padding:18px;max-width:600px;margin:0 auto}
+.lb{font-size:.85rem;color:var(--l);margin:0 0 6px 4px}
+.fs{margin-bottom:16px}
+input,select,textarea{width:100%;padding:13px;background:var(--in);border:0;border-radius:var(--rad);font-size:1rem;color:var(--t);outline:0}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.cap{display:flex;background:var(--in);padding:4px;border-radius:var(--rad)}
+.cap div{flex:1;text-align:center;padding:10px;border-radius:8px;color:var(--l);cursor:pointer}
+.cap .on{background:#fff;color:var(--b);font-weight:600;box-shadow:0 2px 5px #0000000d}
+.btn{width:100%;padding:15px;border:0;border-radius:var(--rad);font-size:1.05rem;font-weight:600;color:#fff;background:var(--b);cursor:pointer}
+.btn:disabled{opacity:.5}
+.amt{font-size:1.8rem;font-weight:700;text-align:center;background:transparent}
+.nw{display:none;margin-top:8px;border:1px solid var(--s)}
+.pg{display:none}.pg.on{display:block}
+.nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fffffff2;border-top:1px solid #0001;padding-bottom:env(safe-area-inset-bottom);z-index:100}
+.nav div{flex:1;padding:10px;text-align:center;color:#C7C7CC;cursor:pointer;font-size:.75rem}
+.nav div.on{color:var(--b)}.nav span{display:block;font-size:1.4rem}
+.card{background:#fff;border-radius:var(--rad);padding:12px 14px;margin-bottom:10px;font-size:.92rem;line-height:1.5}
+.card .top{display:flex;justify-content:space-between;font-weight:600}
+.card .sub{color:var(--l);font-size:.85rem}
+.act{display:flex;gap:8px;margin-top:8px}
+.act button{flex:1;padding:8px;border:0;border-radius:8px;background:var(--in);color:var(--t);cursor:pointer}
+.act .vd{color:var(--r)}
+.empty{text-align:center;color:#bbb;padding:24px}
+.err{color:#c0392b;min-height:1.2em;margin-bottom:10px;font-size:.9rem}
+.note{background:#fff7e6;color:#8a6d3b;border-radius:var(--rad);padding:10px 12px;margin-bottom:12px;font-size:.85rem}
+.ov{position:fixed;inset:0;background:#0006;z-index:999;display:none;align-items:center;justify-content:center}
+.md{background:#fff;width:90%;max-width:360px;max-height:85vh;overflow:auto;border-radius:20px;padding:22px}
+.md h3{margin:0 0 14px;text-align:center}
+.mb{background:var(--in);border-radius:12px;padding:14px;line-height:1.7;font-size:.95rem;margin-bottom:16px}
+.mb .fs{margin-bottom:10px}
+.mbt{display:flex;gap:10px}
+.mbt button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:600;cursor:pointer;background:#F2F2F0;color:#666}
+.mbt .ok{background:var(--b);color:#fff}
+#boot{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--b);font-weight:700}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:20px;font-size:.9rem;z-index:3000;display:none}
+</style></head><body>
+
+<div id="boot"><div style="font-size:2rem">⏳</div>同步資料中...</div>
+<div id="retry" hidden class="wrap" style="text-align:center;padding-top:80px">連線失敗，且沒有暫存的選單。<br><br><button class="btn" onclick="location.reload()">重試</button></div>
+
+<div id="login" hidden>
+ <div class="hd">RenovatePro</div>
+ <div class="wrap">
+  <div class="fs"><div class="lb">姓名</div><select id="l-name"></select></div>
+  <div class="fs"><div class="lb">PIN</div><input id="l-pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  <div id="l-err" class="err"></div>
+  <button id="l-btn" class="btn" onclick="doLogin()">登入</button>
+  <div class="sub" id="l-env" style="text-align:center;margin-top:14px;color:var(--l);font-size:.8rem"></div>
+ </div>
+</div>
+
+<div id="app" hidden>
+ <div class="hd"><span id="ttl">工時回報</span><span class="out" onclick="logout()">登出</span><small><span id="who"></span>｜連線：<span id="env"></span></small></div>
+
+ <div class="pg on" id="p-worker"><div class="wrap">
+  <div class="fs" id="w-whobox" hidden><div class="lb">員工（老闆代填）</div><select id="w-who"></select></div>
+  <div class="fs"><div class="lb">日期</div><input type="date" id="w-date"></div>
+  <div class="fs"><div class="lb">專案工地</div><select id="w-proj" onchange="nw('w-proj','w-pn')"></select><input id="w-pn" class="nw" placeholder="輸入新專案名稱（會標示待確認）"></div>
+  <div class="fs"><div class="lb">工作內容</div><textarea id="w-desc" rows="3" placeholder="例如：釘天花板骨架..."></textarea></div>
+  <div class="fs"><div class="lb">今日工數</div><div class="cap" id="w-unit"><div class="on" data-v="1">1 工</div><div data-v="0.5">0.5 工</div><div data-v="0">0</div></div></div>
+  <div class="fs"><div class="lb">加班（小時，0～12）</div><input type="number" id="w-ot" placeholder="0" step="0.5" min="0" max="12" inputmode="decimal"></div>
+  <div class="fs"><div class="lb">代墊費用（選填，送出後會自動記入收支）</div><div class="row"><input type="number" id="w-claim" placeholder="$ 金額" inputmode="decimal" style="flex:1"><input id="w-cd" placeholder="代墊說明" style="flex:2"></div></div>
+  <button class="btn" onclick="askWorker()">送出今日工時</button>
+ </div></div>
+
+ <div class="pg" id="p-finance"><div class="wrap">
+  <div class="cap" style="margin-bottom:18px" id="f-dir"><div class="on" data-v="支出" style="color:var(--r)">支出</div><div data-v="收入">收入</div></div>
+  <div class="fs" style="text-align:center"><div class="lb">金額（含稅，請填正數）</div><input type="number" id="f-amt" class="amt" placeholder="$ 0" inputmode="decimal"></div>
+  <div class="fs row"><input type="date" id="f-date"><select id="f-cat"></select></div>
+  <div class="fs"><div class="lb">專案</div><select id="f-proj" onchange="nw('f-proj','f-pn')"></select><input id="f-pn" class="nw" placeholder="輸入新專案名稱（會標示待確認）"></div>
+  <div class="fs row"><select id="f-meth"></select><select id="f-inv"></select></div>
+  <div class="fs"><input id="f-ino" placeholder="發票號碼（選填）"></div>
+  <div class="fs"><input id="f-vendor" placeholder="廠商（如有統編可寫此）" style="margin-bottom:10px"><input id="f-desc" placeholder="細項說明..."></div>
+  <button class="btn" id="f-btn" style="background:var(--r)" onclick="askFinance()">確認支出</button>
+ </div></div>
+
+ <div class="pg" id="p-mine"><div class="wrap">
+  <div class="row" style="margin-bottom:12px"><input type="month" id="m-month" onchange="loadMine()"><select id="m-who" hidden onchange="loadMine()"></select></div>
+  <div class="cap" id="m-type" style="margin-bottom:14px"><div class="on" data-v="worker">工時</div><div data-v="finance">收支</div></div>
+  <div id="m-lock" class="note" hidden>🔒 這個月份已結算，僅供查看。需要修改請洽老闆。</div>
+  <div id="m-list"></div>
+ </div></div>
+
+ <div class="nav">
+  <div class="on" onclick="go('worker',this)"><span>👷</span>工時</div>
+  <div onclick="go('finance',this)"><span>💰</span>記帳</div>
+  <div onclick="go('mine',this)"><span>📋</span>我的紀錄</div>
+ </div>
+</div>
+
+<div class="ov" id="ov"><div class="md"><h3 id="m-t"></h3><div class="mb" id="m-b"></div><div class="mbt"><button onclick="closeM()">返回</button><button class="ok" id="m-ok">確認送出</button></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ★ 把這行換成「測試版」網頁應用程式網址（結尾是 /exec）
+const SCRIPT_URL = "貼上測試版網址/exec";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const ls = (k, v) => v === undefined ? JSON.parse(localStorage.getItem(k) || "null") : localStorage.setItem(k, JSON.stringify(v));
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+let S = ls("rp_s"), M = ls("rp_menu"), P = null, items = [], mt = "worker", locked = false;
+
+function toast(t) { const e = $("toast"); e.textContent = t; e.style.display = "block"; setTimeout(() => e.style.display = "none", 2200); }
+
+async function api(body) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 25000);
+  try { const r = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(body), signal: c.signal }); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+
+// ---------- 啟動 ----------
+window.onload = async () => {
+  try { M = await (await fetch(SCRIPT_URL + "?action=getData")).json(); ls("rp_menu", M); }
+  catch (e) { if (!M) { $("boot").hidden = true; $("retry").hidden = false; return; } toast("離線中，使用上次的選單"); }
+  $("boot").hidden = true;
+  S && S.token ? enter() : showLogin();
+};
+function fill(el, list, extra, cur) {
+  el.innerHTML = "";
+  (list || []).forEach(v => el.add(new Option(v, v)));
+  if (cur && !(list || []).includes(cur)) el.add(new Option(cur, cur));
+  if (extra) el.add(new Option(extra, "__new"));
+}
+function nw(s, i) { $(i).style.display = $(s).value === "__new" ? "block" : "none"; }
+const pv = (s, i) => $(s).value === "__new" ? $(i).value.trim() : $(s).value;
+
+// ---------- 登入 ----------
+function showLogin() {
+  $("app").hidden = true; $("login").hidden = false;
+  fill($("l-name"), M.employees);
+  const last = localStorage.getItem("rp_last"); if (last) $("l-name").value = last;
+  $("l-env").textContent = "連線：" + (M.env || "?");
+}
+async function doLogin() {
+  const b = $("l-btn"); b.disabled = true; $("l-err").textContent = "";
+  try {
+    const r = await api({ action: "login", name: $("l-name").value, pin: $("l-pin").value });
+    if (!r.ok) { $("l-err").textContent = r.msg; return; }
+    S = { token: r.token, name: r.name, role: r.role }; ls("rp_s", S); localStorage.setItem("rp_last", r.name);
+    $("l-pin").value = ""; enter();
+  } catch (e) { $("l-err").textContent = "連線失敗，請檢查網路後再試"; }
+  finally { b.disabled = false; }
+}
+function logout(msg) { S = null; localStorage.removeItem("rp_s"); showLogin(); if (msg) $("l-err").textContent = msg; }
+
+function enter() {
+  $("login").hidden = true; $("app").hidden = false;
+  $("who").textContent = S.name + (S.role === "老闆" ? "（老闆）" : ""); $("env").textContent = M.env || "?";
+  const lp = localStorage.getItem("rp_proj");
+  fill($("w-proj"), M.projects, "➕ 新增專案...", lp); if (lp) $("w-proj").value = lp;
+  fill($("f-proj"), M.projects, "➕ 新增專案...");
+  fill($("f-cat"), M.categories); fill($("f-meth"), M.methods); fill($("f-inv"), M.invoices);
+  $("w-date").value = $("f-date").value = today(); $("m-month").value = today().slice(0, 7);
+  const boss = S.role === "老闆";
+  $("w-whobox").hidden = $("m-who").hidden = !boss;
+  if (boss) { fill($("w-who"), M.employees); fill($("m-who"), M.employees); $("w-who").value = $("m-who").value = S.name; }
+}
+
+// ---------- 切換與膠囊 ----------
+function go(p, el) {
+  document.querySelectorAll(".pg").forEach(x => x.classList.remove("on")); $("p-" + p).classList.add("on");
+  document.querySelectorAll(".nav div").forEach(x => x.classList.remove("on")); el.classList.add("on");
+  $("ttl").textContent = { worker: "工時回報", finance: "收支記帳", mine: "我的紀錄" }[p];
+  if (p === "mine") loadMine();
+}
+function capsule(id, fn) {
+  document.querySelectorAll("#" + id + " div").forEach(el => el.onclick = () => {
+    document.querySelectorAll("#" + id + " div").forEach(x => { x.classList.remove("on"); x.style.color = ""; });
+    el.classList.add("on"); fn && fn(el.dataset.v, el);
+  });
+}
+capsule("w-unit");
+capsule("f-dir", (v, el) => { el.style.color = v === "支出" ? "var(--r)" : "var(--s)"; const b = $("f-btn"); b.textContent = "確認" + v; b.style.background = v === "支出" ? "var(--r)" : "var(--s)"; });
+capsule("m-type", v => { mt = v; loadMine(); });
+const cap = id => document.querySelector("#" + id + " .on").dataset.v;
+
+// ---------- 送出（含防重複） ----------
+function ask(type, data, html) {
+  const sig = JSON.stringify([type, data]);
+  if (!P || P.sig !== sig) P = { type, data, sig, rid: uuid() };   // 內容沒變就沿用同一個編號，重送不會重複
+  $("m-t").textContent = "請確認資料無誤"; $("m-b").innerHTML = html;
+  const ok = $("m-ok"); ok.textContent = "確認送出"; ok.disabled = false; ok.onclick = send;
+  $("ov").style.display = "flex";
+}
+const closeM = () => $("ov").style.display = "none";
+
+function askWorker() {
+  const d = { date: $("w-date").value, project: pv("w-proj", "w-pn"), desc: $("w-desc").value.trim(), unit: cap("w-unit"),
+    overtime: +$("w-ot").value || 0, claim: +$("w-claim").value || 0, claimDesc: $("w-cd").value.trim() };
+  if (S.role === "老闆") d.name = $("w-who").value;
+  if (!d.project || !d.desc) return alert("請選擇專案並填寫工作內容");
+  if (d.overtime < 0 || d.overtime > 12) return alert("加班時數需在 0 到 12 之間");
+  ask("worker", d, `<b>👷 ${esc(d.name || S.name)}</b>　${esc(d.date)}<br><b>🏗️ 專案：</b>${esc(d.project)}<br><b>📝 內容：</b>${esc(d.desc)}<br><b>⏰ 工數：</b>${d.unit} 工　加班 ${d.overtime} 小時` +
+    (d.claim ? `<br><b style="color:#d68910">💰 代墊：$${d.claim}</b> ${esc(d.claimDesc)}` : ""));
+}
+function askFinance() {
+  const dir = cap("f-dir"), amt = Math.abs(+$("f-amt").value);
+  const d = { date: $("f-date").value, typeDir: dir, project: pv("f-proj", "f-pn"), category: $("f-cat").value, method: $("f-meth").value,
+    amount: amt, invoiceType: $("f-inv").value, invoiceNo: $("f-ino").value.trim(), vendor: $("f-vendor").value.trim(), desc: $("f-desc").value.trim() };
+  if (!amt) return alert("請輸入金額");
+  if (!d.project) return alert("請選擇專案");
+  ask("finance", d, `<b>🏗️ 專案：</b>${esc(d.project)}<br><b>📂 分類：</b>${esc(d.category)}<br><b>💰 金額：</b>$${amt}（${dir}）<br><b>🧾 單據：</b>${esc(d.invoiceType)}<br><b>📝 說明：</b>${esc(d.desc || "無")}`);
+}
+async function send() {
+  const b = $("m-ok"); b.disabled = true; b.textContent = "傳送中...";
+  try {
+    const r = await api({ action: "submit", token: S.token, type: P.type, rid: P.rid, data: P.data });
+    if (r.auth === false) { closeM(); return logout(r.msg); }
+    if (r.ok) {
+      closeM(); toast(r.dup ? "這筆先前已送出，沒有重複記錄" : "✅ 已送出");
+      if (P.type === "worker") { if (P.data.project) localStorage.setItem("rp_proj", P.data.project); ["w-desc", "w-claim", "w-cd"].forEach(i => $(i).value = ""); }
+      else ["f-amt", "f-desc", "f-vendor", "f-ino"].forEach(i => $(i).value = "");
+      P = null;
+      try { M = await (await fetch(SCRIPT_URL + "?action=getData")).json(); ls("rp_menu", M); } catch (e) {}
+    } else if (r.exists) { closeM(); alert(r.msg); go("mine", document.querySelectorAll(".nav div")[2]); }
+    else alert("❌ " + r.msg);
+  } catch (e) { alert("網路不穩，無法確認是否已送出。請直接再按一次「確認送出」，不會重複記錄。"); }
+  finally { b.disabled = false; b.textContent = "確認送出"; }
+}
+
+// ---------- 我的紀錄 ----------
+async function loadMine() {
+  const box = $("m-list"); box.innerHTML = '<div class="empty">載入中...</div>';
+  try {
+    const r = await api({ action: "list", token: S.token, type: mt, month: $("m-month").value, who: S.role === "老闆" ? $("m-who").value : undefined });
+    if (r.auth === false) return logout(r.msg);
+    if (!r.ok) { box.innerHTML = `<div class="empty">${esc(r.msg)}</div>`; return; }
+    items = r.items; locked = r.locked; $("m-lock").hidden = !locked;
+    box.innerHTML = items.length ? items.map(card).join("") : '<div class="empty">這個月沒有紀錄</div>';
+  } catch (e) { box.innerHTML = '<div class="empty">載入失敗，<a href="#" onclick="loadMine();return false">重試</a></div>'; }
+}
+function card(it, i) {
+  const can = !it.readonly && (!locked || S.role === "老闆");
+  const head = mt === "worker"
+    ? `<span>${esc(it.date)}　${esc(it.project)}</span><span>${esc(it.unit)} 工</span>`
+    : `<span>${esc(it.date)}　${esc(it.category)}</span><span style="color:${it.amount < 0 ? "var(--r)" : "var(--s)"}">${it.amount < 0 ? "-" : "+"}$${Math.abs(it.amount)}</span>`;
+  const sub = mt === "worker"
+    ? `${esc(it.desc)}${+it.overtime ? "｜加班 " + esc(it.overtime) + " 小時" : ""}${+it.claim ? "｜代墊 $" + esc(it.claim) : ""}`
+    : `${esc(it.project)}｜${esc(it.method)}｜${esc(it.desc)}`;
+  return `<div class="card"><div class="top">${head}</div><div class="sub">${sub}</div>` +
+    (it.readonly ? '<div class="sub">🔗 代墊自動入帳，請到工時紀錄修改</div>' : "") +
+    (can ? `<div class="act"><button onclick="editIt(${i})">修改</button><button class="vd" onclick="voidIt(${i})">作廢</button></div>` : "") + "</div>";
+}
+
+const FD = {
+  worker: [["date", "日期", "date"], ["project", "專案", "projects"], ["desc", "工作內容", "text"], ["unit", "工數", ["0", "0.5", "1"]], ["overtime", "加班（小時）", "number"], ["claim", "代墊金額", "number"], ["claimDesc", "代墊說明", "text"]],
+  finance: [["date", "日期", "date"], ["typeDir", "方向", ["支出", "收入"]], ["project", "專案", "projects"], ["category", "分類", "categories"], ["amount", "金額（正數）", "number"], ["method", "收付方式", "methods"], ["invoiceType", "單據", "invoices"], ["invoiceNo", "發票號碼", "text"], ["vendor", "廠商", "text"], ["desc", "說明", "text"]]
+};
+function editIt(i) {
+  const it = items[i], t = mt;
+  const orig = k => k === "amount" ? Math.abs(it[k]) : it[k];
+  $("m-t").textContent = "修改紀錄";
+  $("m-b").innerHTML = FD[t].map(([k, lab, ty]) => {
+    const v = orig(k);
+    let inp;
+    if (Array.isArray(ty) || ["projects", "categories", "methods", "invoices"].includes(ty)) {
+      const list = Array.isArray(ty) ? ty : M[ty];
+      const opts = (list.includes(String(v)) ? list : [String(v)].concat(list));
+      inp = `<select id="e-${k}">${opts.map(o => `<option${String(o) === String(v) ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+    } else inp = `<input id="e-${k}" type="${ty}" value="${esc(v)}"${ty === "number" ? ' inputmode="decimal" step="0.5"' : ""}>`;
+    return `<div class="fs"><div class="lb">${lab}</div>${inp}</div>`;
+  }).join("");
+  const ok = $("m-ok"); ok.textContent = "儲存修改"; ok.disabled = false;
+  ok.onclick = async () => {
+    const ch = {};
+    FD[t].forEach(([k]) => { const nv = $("e-" + k).value; if (String(nv) !== String(orig(k))) ch[k] = nv; });
+    if (!Object.keys(ch).length) { closeM(); return toast("沒有變更"); }
+    ok.disabled = true; ok.textContent = "儲存中...";
+    try {
+      const r = await api({ action: "edit", token: S.token, type: t, rid: it.rid, changes: ch });
+      if (r.auth === false) { closeM(); return logout(r.msg); }
+      if (r.ok) { closeM(); toast("✅ 已修改，並留下修改紀錄"); loadMine(); } else alert("❌ " + r.msg);
+    } catch (e) { alert("網路不穩，請稍後再試一次（可先重新整理確認有沒有修改成功）"); }
+    finally { ok.disabled = false; ok.textContent = "儲存修改"; }
+  };
+  $("ov").style.display = "flex";
+}
+async function voidIt(i) {
+  const it = items[i];
+  if (!confirm("確定要作廢這筆紀錄嗎？\n（資料不會被刪除，原值會留在修改紀錄）")) return;
+  try {
+    const r = await api({ action: "void", token: S.token, type: mt, rid: it.rid });
+    if (r.auth === false) return logout(r.msg);
+    if (r.ok) { toast("已作廢"); loadMine(); } else alert("❌ " + r.msg);
+  } catch (e) { alert("網路不穩，請稍後再試"); }
+}
+</script></body></html>
