@@ -149,9 +149,31 @@ async function api(body, ms = 25000) {
 }
 
 // ---------- 啟動 ----------
+// 有上次的選單就直接開，選單在背景更新；第一次使用才需要等
+async function fetchMenu(ms = 20000) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try { const m = await (await fetch(SCRIPT_URL + "?action=getData", { signal: c.signal })).json(); ls("rp_menu", m); return m; }
+  finally { clearTimeout(t); }
+}
+function refillMenus() {
+  const re = (id, list, extra) => { const el = $(id); if (!el) return; const v = el.value; fill(el, list, extra, v === "__new" ? null : v); if (v) el.value = v; };
+  if (!$("app").hidden && S) {
+    re("w-proj", M.projects, "➕ 新增專案..."); re("f-proj", M.projects, "➕ 新增專案...");
+    re("f-cat", M.categories); re("f-meth", methodList()); re("f-inv", M.invoices);
+    if (S.role === "老闆") { const L = M.staff || M.employees; re("w-who", L); re("m-who", L); }
+    $("env").textContent = M.env || "?";
+  } else if (!$("login").hidden) {
+    re("l-name", M.employees); $("l-env").textContent = "連線：" + (M.env || "?");
+  }
+}
+async function refreshMenu() {
+  try { const m = await fetchMenu(); const changed = JSON.stringify(m) !== JSON.stringify(M); M = m; if (changed) refillMenus(); }
+  catch (e) { /* 背景更新失敗就沿用上次的選單 */ }
+}
 window.onload = async () => {
-  try { M = await (await fetch(SCRIPT_URL + "?action=getData")).json(); ls("rp_menu", M); }
-  catch (e) { if (!M) { $("boot").hidden = true; $("retry").hidden = false; return; } toast("離線中，使用上次的選單"); }
+  if (M) { $("boot").hidden = true; S && S.token ? enter() : showLogin(); refreshMenu(); return; }
+  try { M = await fetchMenu(); }
+  catch (e) { $("boot").hidden = true; $("retry").hidden = false; return; }
   $("boot").hidden = true;
   S && S.token ? enter() : showLogin();
 };
