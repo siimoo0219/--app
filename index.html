@@ -321,7 +321,8 @@ function upShow(left, msg) {
 }
 async function pump() {
   if (upBusy) return; upBusy = true; clearTimeout(upTimer);
-  const retry = msg => { upFail++; const wait = Math.min(300000, 5000 * 2 ** (upFail - 1)); upTimer = setTimeout(pump, wait); return msg + "，" + Math.round(wait / 1000) + " 秒後自動重試"; };
+  // quiet：不顯示倒數秒數（給師傅看的訊息要讓人安心，不用知道技術細節）
+  const retry = (msg, quiet) => { upFail++; const wait = Math.min(300000, 5000 * 2 ** (upFail - 1)); upTimer = setTimeout(pump, wait); return quiet ? msg : msg + "，" + Math.round(wait / 1000) + " 秒後自動重試"; };
   try {
     while (true) {
       if (!S || !S.token) break;
@@ -337,6 +338,8 @@ async function pump() {
       if (r.auth === false) { upShow(q.length, "登入過期，重新登入後會繼續"); logout(r.msg); break; }
       if (r.ok) { await DB.del(it.pid); upFail = 0; upSent++; continue; }
       if (r.fatal) { await DB.del(it.pid); alert(`「${it.label}」有 1 張照片無法上傳：${r.msg}`); continue; }
+      // 後端還沒支援照片上傳（未部署新版）：照片留在手機，不刪除，背景慢慢重試
+      if (/未知的操作/.test(r.msg || "")) { upShow(q.length, retry("已安全存在手機，系統更新後會自動上傳", true)); break; }
       upShow(q.length, retry(r.msg || "伺服器忙碌")); break;
     }
   } finally { upBusy = false; }
